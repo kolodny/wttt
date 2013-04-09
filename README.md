@@ -12,29 +12,25 @@ but since then it's come along niecly.
 Sample usage is something like this:
 
 ```javascript
-wttt(function() {
-    var that = this;
-    
+wttt(function(api) {
     console.log('waiting for something to happen');
     setTimeout(function() {
         console.log('that something happened')
-        that.ok("here's", 'some', 'args');
+        api.ok("here's", 'some', 'args');
     }, 100);
 }).then(
-    function(h, s, a) {
+    function(api, h, s, a) {
         console.log(h);
         console.log(s);
         console.log(a);
     }
 ).then(
-    function() {
-        var that = this;
-
+    function(api) {
         this.waitFor();
         console.log('waiting again...');
         setTimeout(function() {
             console.log('done waiting');
-            that.ok();
+            api.ok();
         }, 100);
     }
 ).then(
@@ -52,8 +48,8 @@ wttt(function() {
         }
     }
 ).then(
-    function(id) { console.log('good id:', id); },
-    function(msg, id) { console.log(msg, id); }
+    function(api, id) { console.log('good id:', id); },
+    function(api, msg, id) { console.log(msg, id); }
 ).then(
     function() {
         console.log('this will fire unless the last `then` had a waitFor without a `this.ok()` or `this.err()`');
