@@ -22,30 +22,30 @@
 			errorFlag = false,
 			lastReturned,
 			currentlyExecuting,
-			contextForFunctions,
+			api,
 			Api = function() {
 				this.waitFor = function waitFor(numberOfTicks) {
 					waitTicks += +(numberOfTicks || 1);
 				}
-				this.ok = function ok() {
+				this.ok = function() {
 					waitTicks--;
-					lastReturned = arguments;
+					lastReturned = Array.prototype.slice.call(arguments);
 					popQueueWhenDone();
 				}
 
-				this.err = function err() {
+				this.err = function() {
 					errorFlag = true;
 					this.ok.apply(this, arguments);
 				}
 			};
 			
 		Api.prototype = this;
-		contextForFunctions = new Api()
+		api = new Api()
 			
-		contextForFunctions.waitFor(argsLength);
+		api.waitFor(argsLength);
 		currentlyExecuting = true;
 		for (var i = 0; i < argsLength; i++) {
-			args[i].call(contextForFunctions);
+			args[i].call(api, api);
 		}
 		currentlyExecuting = false;
 		
@@ -59,14 +59,14 @@
 			if (!currentlyExecuting && waitTicks <= 0 && queue.length) {
 				if (!errorFlag) {
 					currentlyExecuting = true;
-					queue.shift().ok.apply(contextForFunctions, lastReturned);
+					queue.shift().ok.apply(api, [api].concat(lastReturned));
 					currentlyExecuting = false;
 				} else {
 					var err;
-					while (queue.length && (err = queue.shift().err) !== undefined) { /* do nothing */ }
+					while (queue.length && !(err = queue.shift().err)) {} // do nothing
 					if (err) {
 						currentlyExecuting = true;
-						err.apply(contextForFunctions, lastReturned);
+						err.apply(api, [api].concat(lastReturned));
 						currentlyExecuting = false;
 						errorFlag = false;
 					}
